@@ -1,9 +1,5 @@
-/* Noomesh site — Slate palette, lifted from @metis/tokens (pai-mesh-ui,
-   packages/tokens/src/tokens.css) so the site and the console read as one
-   product. Dark-first: the console's dark theme is the product's face.
-
-   Kept as a plain stylesheet with no build step, matching how this repo
-   already deploys (push to main -> Pages, no CI). */
+/* Noomesh site — shared palette and primitives.
+   Dark-first, plain CSS, no build step. */
 
 :root {
   /* Slate — dark */

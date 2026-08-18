@@ -1,5 +1,4 @@
-/* Animated node-link field — the motif both pages share.
-   It is the product's own shape: a mesh of nodes with edges between them.
+/* Animated node-link field — a mesh of nodes with edges between them.
 
    Honours prefers-reduced-motion (renders one static frame), pauses when the
    tab is hidden, and caps device-pixel-ratio so a 3x phone doesn't render 9x

@@ -1,7 +1,4 @@
-# The launch page is staged here before go-live. Keep it out of search results
-# until it becomes index.html — then delete this Disallow and the noindex meta
-# tag in the page itself.
 User-agent: *
-Disallow: /launch.html
+Allow: /
 
 Sitemap: https://noomesh.ai/sitemap.xml
