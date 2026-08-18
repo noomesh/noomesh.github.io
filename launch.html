@@ -95,10 +95,13 @@
       font-family: var(--mono);
       font-size: 11.5px;
       color: var(--dim);
-      /* Narrow enough to break at the separator rather than mid-clause. */
-      max-width: 30ch;
-      margin-inline: auto;
-      text-wrap: balance;
+    }
+    /* One line wherever it fits. Below this it wraps at the separator rather
+       than being shrunk into illegibility. */
+    @media (min-width: 560px) {
+      .cta-note {
+        white-space: nowrap;
+      }
     }
 
     /* ---- sections ---- */
