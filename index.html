@@ -3,78 +3,862 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Noomesh — coming soon</title>
-  <meta name="description" content="Noomesh — a self-hosted AI cluster that runs on hardware you own. Launching soon.">
+  <title>Noomesh — one local-first AI cluster</title>
+  <meta name="description" content="Noomesh turns the machines you already own into one local-first AI cluster. Model serving, memory, a knowledge graph and agents, behind your own network.">
+
   <link rel="canonical" href="https://noomesh.ai/">
 
   <meta property="og:type" content="website">
   <meta property="og:url" content="https://noomesh.ai/">
   <meta property="og:title" content="Noomesh">
-  <meta property="og:description" content="A self-hosted AI cluster that runs on hardware you own. Launching soon.">
+  <meta property="og:description" content="Noomesh turns the machines you already own into one local-first AI cluster.">
   <meta name="twitter:card" content="summary">
 
   <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='16' fill='%230c0e12'/%3E%3Cg stroke='%235f8fd0' stroke-width='1.6' fill='none'%3E%3Cpath d='M9 10.5 23 21M23 10.5 9 21M9 10.5h14M9 21h14'/%3E%3C/g%3E%3Cg fill='%23e6eaf1'%3E%3Ccircle cx='9' cy='10.5' r='2.6'/%3E%3Ccircle cx='23' cy='10.5' r='2.6'/%3E%3Ccircle cx='9' cy='21' r='2.6'/%3E%3Ccircle cx='23' cy='21' r='2.6'/%3E%3C/g%3E%3C/svg%3E">
-  <link rel="stylesheet" href="assets/site.css">
   <style>
-    body {
-      min-height: 100dvh;
-      display: grid;
-      place-items: center;
-      overflow: hidden;
+/* Noomesh site — shared palette and primitives.
+   Dark-first, plain CSS, no build step. */
+
+:root {
+  /* Slate — dark */
+  --bg: #0c0e12;
+  --surface: #14171d;
+  --surface-2: #1b1f28;
+  --surface-3: #232937;
+  --line: rgba(150, 172, 205, 0.11);
+  --line-2: rgba(150, 172, 205, 0.2);
+  --ink: #e6eaf1;
+  --ink-2: #aab4c4;
+  --dim: #8993a6;
+  --good: #46c08a;
+  --warn: #e0a24a;
+  --primary: #5f8fd0;
+  --primary-foreground: #08111c;
+  --primary-soft: rgba(95, 143, 208, 0.14);
+
+  --sans: system-ui, 'Segoe UI', -apple-system, Roboto, sans-serif;
+  --mono: ui-monospace, 'Cascadia Code', 'JetBrains Mono', 'SF Mono', Consolas, Menlo, monospace;
+
+  /* consumed by assets/mesh.js */
+  --mesh-line: 95, 143, 208;
+  --mesh-dot: 170, 180, 196;
+
+  --maxw: 1060px;
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+html {
+  scroll-behavior: smooth;
+}
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+}
+body {
+  background: var(--bg);
+  color: var(--ink);
+  font-family: var(--sans);
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+}
+canvas#mesh {
+  position: fixed;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 0;
+  pointer-events: none;
+  opacity: 0.55;
+}
+a {
+  color: var(--primary);
+  text-decoration: none;
+}
+a:hover {
+  text-decoration: underline;
+}
+:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 3px;
+  border-radius: 4px;
+}
+
+/* Skip link — the first tab stop on a page whose nav precedes the content. */
+.skip {
+  position: absolute;
+  left: -9999px;
+  top: 0;
+  z-index: 50;
+  background: var(--surface);
+  color: var(--ink);
+  padding: 10px 16px;
+  border: 1px solid var(--line-2);
+  border-radius: 0 0 6px 0;
+}
+.skip:focus {
+  left: 0;
+}
+
+.wrap {
+  position: relative;
+  z-index: 1;
+  max-width: var(--maxw);
+  margin: 0 auto;
+  padding: 0 24px;
+}
+
+/* ---- wordmark ---- */
+.wordmark {
+  font-weight: 650;
+  letter-spacing: -0.02em;
+  color: var(--ink);
+}
+.wordmark .accent {
+  color: var(--primary);
+}
+
+/* ---- eyebrow / mono label ---- */
+.eyebrow {
+  font-family: var(--mono);
+  font-size: 11px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--dim);
+}
+
+/* ---- buttons ---- */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 11px 20px;
+  border-radius: 7px;
+  font-size: 14.5px;
+  font-weight: 600;
+  border: 1px solid transparent;
+  cursor: pointer;
+}
+.btn:hover {
+  text-decoration: none;
+}
+.btn-primary {
+  background: var(--primary);
+  color: var(--primary-foreground);
+}
+.btn-primary:hover {
+  filter: brightness(1.08);
+}
+.btn-ghost {
+  border-color: var(--line-2);
+  color: var(--ink);
+}
+.btn-ghost:hover {
+  border-color: var(--ink-2);
+  background: var(--surface-2);
+}
+
+/* ---- status pill ---- */
+.pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 5px 13px;
+  border: 1px solid var(--line-2);
+  border-radius: 999px;
+  font-family: var(--mono);
+  font-size: 11px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--dim);
+  background: rgba(20, 23, 29, 0.6);
+  backdrop-filter: blur(6px);
+}
+.pill::before {
+  content: '';
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--primary);
+  flex-shrink: 0;
+}
+@media (prefers-reduced-motion: no-preference) {
+  .pill::before {
+    animation: pulse 2.4s ease-in-out infinite;
+  }
+}
+@keyframes pulse {
+  50% {
+    opacity: 0.3;
+  }
+}
+
+footer {
+  position: relative;
+  z-index: 1;
+  border-top: 1px solid var(--line);
+  margin-top: 72px;
+  padding: 28px 0 40px;
+}
+footer .wrap {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+}
+footer .made {
+  font-family: var(--mono);
+  font-size: 11.5px;
+  color: var(--dim);
+}
+footer nav {
+  display: flex;
+  gap: 18px;
+  font-size: 13px;
+}
+footer nav a {
+  color: var(--ink-2);
+}
+  </style>
+  <style>
+    /* The field is background texture behind the hero only — it competes with
+       reading once there's real content on the page. */
+    canvas#mesh {
+      height: 92vh;
+      opacity: 0.4;
+      -webkit-mask-image: linear-gradient(to bottom, #000 55%, transparent);
+      mask-image: linear-gradient(to bottom, #000 55%, transparent);
     }
-    main {
+
+    header.site {
       position: relative;
-      z-index: 1;
+      z-index: 2;
+      padding: 22px 0;
+    }
+    header.site .wrap {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+    }
+    header.site .wordmark {
+      font-size: 19px;
+    }
+    header.site nav {
+      display: flex;
+      align-items: center;
+      gap: 22px;
+      font-size: 14px;
+    }
+    header.site nav a {
+      color: var(--ink-2);
+    }
+    header.site nav a:hover {
+      color: var(--ink);
+      text-decoration: none;
+    }
+    @media (max-width: 720px) {
+      header.site nav a:not(.btn) {
+        display: none;
+      }
+    }
+
+    /* ---- hero ---- */
+    .hero {
+      padding: 76px 0 84px;
       text-align: center;
-      padding: 32px 24px;
+    }
+    .hero h1 {
+      margin-top: 22px;
+      font-size: clamp(2.1rem, 6vw, 3.5rem);
+      line-height: 1.1;
+      letter-spacing: -0.025em;
+      text-wrap: balance;
+    }
+    .hero h1 .accent {
+      color: var(--primary);
+    }
+    .hero .lede {
+      margin: 20px auto 0;
       max-width: 640px;
-    }
-    h1 {
-      font-size: clamp(2.6rem, 9vw, 4.6rem);
-      line-height: 1.05;
-    }
-    .tagline {
-      margin-top: 18px;
-      font-size: clamp(1rem, 3.2vw, 1.2rem);
+      font-size: clamp(1rem, 2.6vw, 1.15rem);
       color: var(--ink-2);
       text-wrap: balance;
     }
-    .sub {
-      margin-top: 12px;
-      font-size: 14.5px;
-      color: var(--dim);
-      text-wrap: balance;
-    }
-    .pill {
+    .cta {
       margin-top: 34px;
+      display: flex;
+      gap: 12px;
+      justify-content: center;
+      flex-wrap: wrap;
     }
-    .contact {
-      margin-top: 30px;
+    .cta-note {
+      margin-top: 16px;
+      font-family: var(--mono);
+      font-size: 11.5px;
+      color: var(--dim);
+    }
+    /* One line wherever it fits. Below this it wraps at the separator rather
+       than being shrunk into illegibility. */
+    @media (min-width: 560px) {
+      .cta-note {
+        white-space: nowrap;
+      }
+    }
+
+    /* ---- sections ---- */
+    section {
+      position: relative;
+      z-index: 1;
+      padding: 60px 0;
+    }
+    .sec-head {
+      max-width: 660px;
+      margin-bottom: 32px;
+    }
+    .sec-head h2 {
+      margin-top: 10px;
+      font-size: clamp(1.5rem, 3.6vw, 2rem);
+      letter-spacing: -0.02em;
+      line-height: 1.2;
+    }
+    .sec-head p {
+      margin-top: 12px;
+      color: var(--ink-2);
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(268px, 1fr));
+      gap: 16px;
+    }
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      padding: 22px;
+    }
+    .card h3 {
+      font-size: 15.5px;
+      margin-bottom: 8px;
+      display: flex;
+      align-items: center;
+      gap: 9px;
+    }
+    .card h3 svg {
+      width: 17px;
+      height: 17px;
+      flex-shrink: 0;
+      fill: none;
+      stroke: var(--primary);
+      stroke-width: 1.5;
+    }
+    .card p {
+      font-size: 14px;
+      color: var(--ink-2);
+    }
+    .card .note {
+      display: block;
+      margin-top: 10px;
+      font-family: var(--mono);
+      font-size: 11px;
+      color: var(--dim);
+    }
+
+    /* ---- flow diagram ---- */
+    .flow {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+      gap: 14px;
+      counter-reset: step;
+    }
+    .flow .step {
+      position: relative;
+      background: var(--surface);
+      border: 1px solid var(--line);
+      border-left: 2px solid var(--primary);
+      border-radius: 0 8px 8px 0;
+      padding: 18px 20px;
+    }
+    .flow .step::before {
+      counter-increment: step;
+      content: '0' counter(step);
+      display: block;
+      font-family: var(--mono);
+      font-size: 11px;
+      color: var(--primary);
+      margin-bottom: 7px;
+    }
+    .flow .step h3 {
+      font-size: 14.5px;
+      margin-bottom: 6px;
+    }
+    .flow .step p {
+      font-size: 13.5px;
+      color: var(--ink-2);
+    }
+
+    /* ---- terminal ---- */
+    .term {
+      background: #090b0e;
+      border: 1px solid var(--line-2);
+      border-radius: 10px;
+      overflow: hidden;
+    }
+    .term-bar {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      padding: 10px 14px;
+      border-bottom: 1px solid var(--line);
+      background: var(--surface);
+    }
+    .term-bar i {
+      width: 9px;
+      height: 9px;
+      border-radius: 50%;
+      background: var(--surface-3);
+    }
+    .term-bar span {
+      margin-left: 6px;
+      font-family: var(--mono);
+      font-size: 11px;
+      color: var(--dim);
+    }
+    .term pre {
+      margin: 0;
+      padding: 18px;
+      overflow-x: auto;
       font-family: var(--mono);
       font-size: 12.5px;
+      line-height: 1.75;
+      color: var(--ink-2);
+    }
+    .term .c {
       color: var(--dim);
+    }
+    .term .p {
+      color: var(--primary);
+    }
+    .term .g {
+      color: var(--good);
+    }
+
+    .split {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 40px;
+      align-items: center;
+    }
+    @media (max-width: 860px) {
+      .split {
+        grid-template-columns: 1fr;
+        gap: 26px;
+      }
+      section {
+        padding: 44px 0;
+      }
+    }
+
+    ul.ticks {
+      list-style: none;
+      margin-top: 18px;
+      display: grid;
+      gap: 11px;
+    }
+    ul.ticks li {
+      position: relative;
+      padding-left: 26px;
+      font-size: 14.5px;
+      color: var(--ink-2);
+    }
+    ul.ticks li::before {
+      content: '';
+      position: absolute;
+      left: 4px;
+      top: 8px;
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: var(--primary);
+    }
+
+    code {
+      font-family: var(--mono);
+      font-size: 0.92em;
+      color: var(--ink);
+    }
+
+    .closing {
+      text-align: center;
+      border-top: 1px solid var(--line);
+      padding-top: 56px;
+    }
+    .closing h2 {
+      font-size: clamp(1.5rem, 4vw, 2.1rem);
+      letter-spacing: -0.02em;
+    }
+    .closing p {
+      margin: 14px auto 0;
+      max-width: 520px;
+      color: var(--ink-2);
     }
   </style>
 </head>
 <body>
+  <a class="skip" href="#main">Skip to content</a>
   <canvas id="mesh" aria-hidden="true"></canvas>
 
-  <main>
-    <h1 class="wordmark">noo<span class="accent">mesh</span></h1>
+  <header class="site">
+    <div class="wrap">
+      <a class="wordmark" href="/" aria-label="Noomesh home">noo<span class="accent">mesh</span></a>
+      <nav>
+        <a href="#install">Install</a>
+        <a href="#what">What it is</a>
+        <a href="#how">How it works</a>
+        <a href="#open">Open core</a>
+        <a class="btn btn-ghost" href="https://github.com/noomesh/noomesh">GitHub</a>
+      </nav>
+    </div>
+  </header>
 
-    <p class="tagline">A self-hosted AI cluster that runs on hardware you own.</p>
-    <p class="sub">
-      Your models, your data, your machines — orchestrated as one system,
-      with nothing leaving your network unless you say so.
-    </p>
+  <main id="main">
+    <div class="wrap hero">
+      <span class="eyebrow">Self-hosted AI infrastructure</span>
+      <h1>The machines you already own, <span class="accent">running as one AI cluster</span>.</h1>
+      <p class="lede">
+        Noomesh turns the machines you already own into one local-first AI cluster.
+        Model serving, memory, a knowledge graph, and agents that can act — all behind
+        your own network.
+      </p>
+      <div class="cta">
+        <a class="btn btn-primary" href="#install">Install</a>
+        <a class="btn btn-ghost" href="https://github.com/noomesh/noomesh">Read the source</a>
+        <a class="btn btn-ghost" href="#how">How it works</a>
+      </div>
+      <p class="cta-note">Runs on your hardware · Self-hosted</p>
+    </div>
 
-    <span class="pill">Launching soon</span>
+    <!-- ---------- install ---------- -->
+    <section id="install">
+      <div class="wrap">
+        <div class="sec-head">
+          <span class="eyebrow">Install</span>
+          <h2>One command, then a wizard.</h2>
+          <p>
+            Linux or WSL2, Docker with Compose 2.40 or newer, 16&nbsp;GB RAM and about 40&nbsp;GB of disk. A GPU is optional.
+            The installer puts the <code>noo</code> CLI on your machine; <code>noo onboard</code>
+            walks you through the rest.
+          </p>
+        </div>
+        <div class="term">
+          <div class="term-bar">
+            <i></i><i></i><i></i><span>install</span>
+          </div>
+<pre><span class="p">$</span> curl -fsSL https://github.com/noomesh/noomesh/releases/latest/download/install.sh | sh
+<span class="p">$</span> noo onboard</pre>
+        </div>
+        <div class="cta" style="justify-content:flex-start;margin-top:22px">
+          <a class="btn btn-ghost" href="https://github.com/noomesh/noomesh#quick-start">Read the install guide</a>
+          <a class="btn btn-ghost" href="https://github.com/noomesh/noomesh">Source on GitHub</a>
+        </div>
+      </div>
+    </section>
 
-    <p class="contact">
-      Questions? <a href="mailto:personifai.llc@gmail.com">personifai.llc@gmail.com</a>
-    </p>
+    <!-- ---------- what it is ---------- -->
+    <section id="what">
+      <div class="wrap">
+        <div class="sec-head">
+          <span class="eyebrow">What it is</span>
+          <h2>Not a wrapper around someone else's API.</h2>
+          <p>
+            Noomesh is the layer between your hardware and your work: it decides what runs
+            where, keeps what it learns, and gives agents a way to act on it.
+          </p>
+        </div>
+
+        <div class="grid">
+          <div class="card">
+            <h3>
+              <svg viewBox="0 0 20 20"><rect x="3" y="4" width="14" height="3.5"/><rect x="3" y="12.5" width="14" height="3.5"/></svg>
+              Cluster orchestration
+            </h3>
+            <p>
+              Nodes enroll, heartbeat, and report GPU, VRAM and load. Inference backends
+              start on the node that can actually serve them and stop when they go idle.
+            </p>
+            <span class="note">vLLM · Ollama · llama.cpp</span>
+          </div>
+
+          <div class="card">
+            <h3>
+              <svg viewBox="0 0 20 20"><ellipse cx="10" cy="5.5" rx="6" ry="2.5"/><path d="M4 5.5v9c0 1.4 2.7 2.5 6 2.5s6-1.1 6-2.5v-9"/></svg>
+              Memory that persists
+            </h3>
+            <p>
+              Conversations, documents and embeddings live in your own Postgres. Context
+              carries across sessions instead of being re-pasted into a prompt each time.
+            </p>
+            <span class="note">PostgreSQL · pgvector</span>
+          </div>
+
+          <div class="card">
+            <h3>
+              <svg viewBox="0 0 20 20"><circle cx="5" cy="6" r="1.8"/><circle cx="15" cy="6" r="1.8"/><circle cx="10" cy="14" r="1.8"/><path d="M6.6 7l6.8 5M13.4 7l-6.8 5M6.5 6h7"/></svg>
+              A knowledge graph
+            </h3>
+            <p>
+              Entities and typed relationships extracted from your documents, queryable
+              alongside vector search — so retrieval can follow connections, not just
+              similarity.
+            </p>
+          </div>
+
+          <div class="card">
+            <h3>
+              <svg viewBox="0 0 20 20"><circle cx="7.5" cy="7" r="2.2"/><circle cx="14" cy="8" r="1.8"/><path d="M3.5 16c0-2.4 1.8-4 4-4s4 1.6 4 4M12.5 13c1.4.1 2.6 1.1 3 3"/></svg>
+              Agents that act
+            </h3>
+            <p>
+              A coordinator runs a real tool-calling loop and streams its reasoning as it
+              works. Multi-agent roles collaborate on longer jobs.
+            </p>
+          </div>
+
+          <div class="card">
+            <h3>
+              <svg viewBox="0 0 20 20"><rect x="5" y="9" width="10" height="8" rx="1"/><path d="M7 9V7a3 3 0 0 1 6 0v2"/></svg>
+              Yours by default
+            </h3>
+            <p>
+              Reachable over your own tailnet, scoped service keys for anything external,
+              and an approval gate in front of actions that touch the real world.
+            </p>
+          </div>
+
+          <div class="card">
+            <h3>
+              <svg viewBox="0 0 20 20"><path d="M3 4h14v10H8l-4 3v-3H3z"/></svg>
+              A console and a phone
+            </h3>
+            <p>
+              A web console for the cluster, the graph, jobs and usage — plus a focused
+              mobile companion for the parts you need when you're away from it.
+            </p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ---------- how it works ---------- -->
+    <section id="how">
+      <div class="wrap">
+        <div class="sec-head">
+          <span class="eyebrow">How it works</span>
+          <h2>One gateway in front, your hardware behind.</h2>
+          <p>
+            Everything — console, phone, editor, scripts — talks to one gateway over a
+            contract that's checked in and versioned. Nothing guesses at the API.
+          </p>
+        </div>
+
+        <div class="flow">
+          <div class="step">
+            <h3>Enroll your nodes</h3>
+            <p>Each machine enrolls with a one-time token and starts reporting what it has: GPU, VRAM, cores, load.</p>
+          </div>
+          <div class="step">
+            <h3>The gateway schedules</h3>
+            <p>It picks a node, starts a backend there, and routes work — retiring backends that go idle.</p>
+          </div>
+          <div class="step">
+            <h3>Work builds memory</h3>
+            <p>Conversations, documents and extracted entities accumulate into a store that later work can draw on.</p>
+          </div>
+          <div class="step">
+            <h3>Agents use all of it</h3>
+            <p>The coordinator reasons over that memory, calls tools, and asks before anything consequential.</p>
+          </div>
+        </div>
+
+        <div class="split" style="margin-top:44px">
+          <div>
+            <h3 style="font-size:1.25rem;letter-spacing:-0.015em">Same-origin, on your network</h3>
+            <p style="margin-top:12px;color:var(--ink-2);font-size:14.5px">
+              The console is served by the gateway itself over your tailnet. No public
+              ingress to open, no CORS to negotiate, no third-party origin holding a
+              session for you.
+            </p>
+            <ul class="ticks">
+              <li>REST and WebSocket surfaces defined by a checked-in contract</li>
+              <li>Typed client generated from that contract, never hand-written</li>
+              <li>Uncontracted calls fail loudly in development, not silently in production</li>
+            </ul>
+          </div>
+
+          <div class="term">
+            <div class="term-bar">
+              <i></i><i></i><i></i><span>noo · cluster</span>
+            </div>
+<pre><span class="c"># first machine: the wizard sets up the controller</span>
+<span class="p">$</span> noo onboard
+
+<span class="c"># add a machine: mint a one-time token on the controller</span>
+<span class="p">$</span> noo cluster bootstrap-token create --node <span class="c">&lt;node-name&gt;</span>
+
+<span class="c"># paste the one-liner it prints on the new node, then:</span>
+<span class="p">$</span> noo cluster provision <span class="c">&lt;node-name&gt;</span> --wait
+<span class="p">$</span> noo cluster status</pre>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ---------- open core ---------- -->
+    <section id="open">
+      <div class="wrap">
+        <div class="split">
+          <div>
+            <span class="eyebrow">Open core</span>
+            <h2 style="margin-top:10px;font-size:clamp(1.5rem,3.6vw,2rem);letter-spacing:-0.02em">
+              Readable, runnable, and yours to keep.
+            </h2>
+            <p style="margin-top:12px;color:var(--ink-2)">
+              The core is public: read it, run it, fork it. Optional extensions plug into
+              the same gateway, and the core doesn't depend on them.
+            </p>
+            <div class="cta" style="justify-content:flex-start;margin-top:26px">
+              <a class="btn btn-ghost" href="https://github.com/noomesh/noomesh">Browse the source</a>
+            </div>
+          </div>
+
+          <div class="grid" style="grid-template-columns:1fr">
+            <div class="card">
+              <h3>Core</h3>
+              <p>Cluster orchestration, inference routing, memory, retrieval, the graph, the console, the contracts.</p>
+            </div>
+            <div class="card">
+              <h3>Extensions</h3>
+              <p>Optional modules that plug into the same gateway. Nothing in the core stops working without them.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section>
+      <div class="wrap closing">
+        <h2>Bring your own hardware.</h2>
+        <p>
+          If you already have the machines, you already have most of what you need.
+          Noomesh is the part that makes them one system.
+        </p>
+        <div class="cta">
+          <a class="btn btn-primary" href="#install">Get started</a>
+          <a class="btn btn-ghost" href="mailto:personifai.llc@gmail.com">Talk to us</a>
+        </div>
+      </div>
+    </section>
   </main>
 
-  <script src="assets/mesh.js" defer></script>
+  <footer>
+    <div class="wrap">
+      <span class="made">Noomesh — built by PersonifAI</span>
+      <nav>
+        <a href="https://github.com/noomesh/noomesh">GitHub</a>
+        <a href="https://github.com/noomesh/noomesh/tree/main/docs">Docs</a>
+        <a href="mailto:personifai.llc@gmail.com">Contact</a>
+      </nav>
+    </div>
+  </footer>
+
+  <script>
+/* Animated node-link field — a mesh of nodes with edges between them.
+
+   Honours prefers-reduced-motion (renders one static frame), pauses when the
+   tab is hidden, and caps device-pixel-ratio so a 3x phone doesn't render 9x
+   the pixels for a background. */
+(function () {
+  const canvas = document.getElementById('mesh');
+  if (!canvas) return;
+  const ctx = canvas.getContext('2d');
+  const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  const css = getComputedStyle(document.documentElement);
+  const line = (css.getPropertyValue('--mesh-line') || '95,143,208').trim();
+  const dot = (css.getPropertyValue('--mesh-dot') || '170,180,196').trim();
+
+  let w, h, dpr, points, raf = null;
+
+  function resize() {
+    dpr = Math.min(devicePixelRatio || 1, 2);
+    w = canvas.width = innerWidth * dpr;
+    h = canvas.height = innerHeight * dpr;
+    // Density scales with area but is capped — beyond ~70 the O(n^2) link pass
+    // costs more than it adds visually.
+    const count = Math.min(70, Math.max(18, Math.floor((innerWidth * innerHeight) / 18000)));
+    points = Array.from({ length: count }, () => ({
+      x: Math.random() * w,
+      y: Math.random() * h,
+      vx: (Math.random() - 0.5) * 0.32 * dpr,
+      vy: (Math.random() - 0.5) * 0.32 * dpr,
+    }));
+  }
+
+  function draw() {
+    ctx.clearRect(0, 0, w, h);
+    const linkDist = 168 * dpr;
+    for (let i = 0; i < points.length; i++) {
+      for (let j = i + 1; j < points.length; j++) {
+        const a = points[i], b = points[j];
+        const d = Math.hypot(a.x - b.x, a.y - b.y);
+        if (d < linkDist) {
+          ctx.strokeStyle = `rgba(${line}, ${(1 - d / linkDist) * 0.34})`;
+          ctx.lineWidth = dpr;
+          ctx.beginPath();
+          ctx.moveTo(a.x, a.y);
+          ctx.lineTo(b.x, b.y);
+          ctx.stroke();
+        }
+      }
+    }
+    ctx.fillStyle = `rgba(${dot}, 0.5)`;
+    for (const p of points) {
+      ctx.beginPath();
+      ctx.arc(p.x, p.y, 1.5 * dpr, 0, Math.PI * 2);
+      ctx.fill();
+    }
+  }
+
+  function tick() {
+    for (const p of points) {
+      p.x += p.vx;
+      p.y += p.vy;
+      if (p.x < 0 || p.x > w) p.vx *= -1;
+      if (p.y < 0 || p.y > h) p.vy *= -1;
+    }
+    draw();
+    raf = requestAnimationFrame(tick);
+  }
+
+  function start() {
+    if (reduced) { draw(); return; }
+    if (raf === null) raf = requestAnimationFrame(tick);
+  }
+  function stop() {
+    if (raf !== null) { cancelAnimationFrame(raf); raf = null; }
+  }
+
+  addEventListener('resize', () => { resize(); if (reduced) draw(); });
+  document.addEventListener('visibilitychange', () => (document.hidden ? stop() : start()));
+  resize();
+  start();
+})();
+  </script>
 </body>
 </html>
