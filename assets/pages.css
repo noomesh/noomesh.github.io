@@ -1,0 +1,182 @@
+/* Noomesh site — shared layout for the inner pages (add-ons, terms).
+   Builds on assets/site.css; nothing here changes the landing page. */
+
+.top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-top: 26px;
+  padding-bottom: 6px;
+}
+.top .wordmark {
+  font-size: 1.35rem;
+}
+.top .wordmark:hover {
+  text-decoration: none;
+}
+.top nav {
+  display: flex;
+  gap: 20px;
+  font-size: 14px;
+}
+.top nav a {
+  color: var(--ink-2);
+}
+.top nav a[aria-current='page'] {
+  color: var(--ink);
+}
+
+.page {
+  max-width: 820px;
+  padding-top: 48px;
+}
+.page h1 {
+  margin-top: 10px;
+  font-size: clamp(1.9rem, 5.5vw, 2.7rem);
+  line-height: 1.12;
+  letter-spacing: -0.02em;
+  text-wrap: balance;
+}
+.page h2 {
+  margin-top: 52px;
+  font-size: 1.3rem;
+  letter-spacing: -0.01em;
+}
+.page h3 {
+  font-size: 1.02rem;
+}
+.page p {
+  margin-top: 14px;
+  color: var(--ink-2);
+}
+.lede {
+  font-size: 1.08rem;
+  color: var(--ink-2);
+  text-wrap: pretty;
+}
+.sect-note {
+  margin-top: 6px;
+  font-size: 14.5px;
+  color: var(--dim);
+}
+.page code {
+  font-family: var(--mono);
+  font-size: 0.88em;
+  color: var(--ink);
+  background: var(--surface-2);
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  padding: 1px 6px;
+}
+.page pre {
+  margin-top: 14px;
+  padding: 14px 16px;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  overflow-x: auto;
+}
+.page pre code {
+  background: none;
+  border: 0;
+  padding: 0;
+  font-size: 13px;
+  line-height: 1.7;
+}
+
+.cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 14px;
+  margin-top: 18px;
+}
+.card {
+  background: rgba(20, 23, 29, 0.78);
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  padding: 18px 18px 16px;
+  backdrop-filter: blur(6px);
+}
+.card.licensed {
+  border-color: var(--line-2);
+}
+.card-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 10px;
+}
+.card p {
+  margin-top: 10px;
+  font-size: 14.5px;
+}
+.card .key {
+  margin-top: 12px;
+  font-size: 12px;
+}
+.tag {
+  font-family: var(--mono);
+  font-size: 10.5px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+.tag-free {
+  color: var(--good);
+}
+.tag-licensed {
+  color: var(--warn);
+}
+
+.request {
+  margin-top: 52px;
+  padding: 24px;
+  background: var(--primary-soft);
+  border: 1px solid var(--line-2);
+  border-radius: 12px;
+}
+.request h2 {
+  margin-top: 0;
+}
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 14px 18px;
+  margin-top: 18px;
+}
+.actions .alt {
+  font-size: 14px;
+  color: var(--dim);
+}
+.fine {
+  font-size: 13.5px;
+  color: var(--dim);
+}
+
+/* terms: long-form reading column */
+.prose h2 {
+  margin-top: 36px;
+  font-size: 1.12rem;
+}
+.prose ol {
+  margin: 12px 0 0 1.4em;
+  color: var(--ink-2);
+}
+.prose li {
+  margin-top: 6px;
+}
+.prose .meta {
+  font-family: var(--mono);
+  font-size: 12.5px;
+  color: var(--dim);
+}
+
+@media (max-width: 520px) {
+  .page {
+    padding-top: 32px;
+  }
+  .request {
+    padding: 18px;
+  }
+}
