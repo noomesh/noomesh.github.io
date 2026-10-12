@@ -4,4 +4,8 @@
     <loc>https://noomesh.ai/</loc>
     <changefreq>weekly</changefreq>
   </url>
+  <url>
+    <loc>https://noomesh.ai/add-ons/</loc>
+    <changefreq>monthly</changefreq>
+  </url>
 </urlset>

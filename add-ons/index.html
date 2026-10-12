@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Add-ons — Noomesh</title>
+  <meta name="description" content="Noomesh add-ons: free extras that ship with the core, and licensed add-ons you can request.">
+  <link rel="canonical" href="https://noomesh.ai/add-ons/">
+
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://noomesh.ai/add-ons/">
+  <meta property="og:title" content="Noomesh add-ons">
+  <meta property="og:description" content="Free extras that ship with the core, and licensed add-ons you can request.">
+  <meta name="twitter:card" content="summary">
+
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='16' fill='%230c0e12'/%3E%3Cg stroke='%235f8fd0' stroke-width='1.6' fill='none'%3E%3Cpath d='M9 10.5 23 21M23 10.5 9 21M9 10.5h14M9 21h14'/%3E%3C/g%3E%3Cg fill='%23e6eaf1'%3E%3Ccircle cx='9' cy='10.5' r='2.6'/%3E%3Ccircle cx='23' cy='10.5' r='2.6'/%3E%3Ccircle cx='9' cy='21' r='2.6'/%3E%3Ccircle cx='23' cy='21' r='2.6'/%3E%3C/g%3E%3C/svg%3E">
+  <link rel="stylesheet" href="../assets/site.css">
+  <link rel="stylesheet" href="../assets/pages.css">
+</head>
+<body>
+  <a class="skip" href="#main">Skip to content</a>
+  <canvas id="mesh" aria-hidden="true"></canvas>
+
+  <header class="wrap top">
+    <a class="wordmark" href="/">noo<span class="accent">mesh</span></a>
+    <nav aria-label="Site"><a href="/">Home</a> <a href="/add-ons/" aria-current="page">Add-ons</a></nav>
+  </header>
+
+  <main id="main" class="wrap page">
+    <p class="eyebrow">Add-ons</p>
+    <h1>Extras that run beside the core</h1>
+    <p class="lede">
+      Noomesh is a free, self-hosted core. Add-ons are extras that run as their own
+      containers next to it, on the same machines. Some are free and come with Noomesh.
+      Two are licensed, and you request those from us.
+    </p>
+
+    <section aria-labelledby="free">
+      <h2 id="free">Free</h2>
+      <p class="sect-note">Switch these on in <code>noomesh.yaml</code>. No licence needed.</p>
+      <div class="cards">
+      <article class="card free">
+        <div class="card-head"><h3>Trellion knowledge pack</h3><span class="tag tag-free">Free</span></div>
+        <p>Search your own documents and conversation history, build a knowledge graph from what you ingest, and recall earlier work.</p>
+        <p class="key"><code>addons.trellion</code></p>
+      </article>
+      <article class="card free">
+        <div class="card-head"><h3>Identity</h3><span class="tag tag-free">Free</span></div>
+        <p>Short-lived connection tokens for each agent.</p>
+        <p class="key"><code>addons.identity</code></p>
+      </article>
+      <article class="card free">
+        <div class="card-head"><h3>Voice</h3><span class="tag tag-free">Free</span></div>
+        <p>Local speech-to-text and text-to-speech, and a voice channel for talking to your cluster.</p>
+        <p class="key"><code>addons.voice</code></p>
+      </article>
+      </div>
+    </section>
+
+    <section aria-labelledby="licensed">
+      <h2 id="licensed">Licensed</h2>
+      <p class="sect-note">These need an entitlement from PersonifAI. Everything else keeps working without one.</p>
+      <div class="cards">
+      <article class="card licensed">
+        <div class="card-head"><h3>Intelligent tier</h3><span class="tag tag-licensed">Licensed</span></div>
+        <p>Graph-guided retrieval on top of the knowledge pack.</p>
+        <p class="key"><code>addons.trellion_intel</code></p>
+      </article>
+      <article class="card licensed">
+        <div class="card-head"><h3>Evolve</h3><span class="tag tag-licensed">Licensed</span></div>
+        <p>Self-tuning of the agent from its own runs.</p>
+        <p class="key"><code>addons.evolve</code></p>
+      </article>
+      </div>
+    </section>
+
+    <section class="request" aria-labelledby="request">
+      <h2 id="request">Request a licensed add-on</h2>
+      <p>
+        Send us a short note and we will get back to you to arrange your entitlement
+        and answer questions.
+      </p>
+      <p class="actions">
+        <a class="btn btn-primary" href="mailto:sales@noomesh.ai?subject=Add-on%20request&amp;body=Hello%2C%0A%0AI%27d%20like%20to%20request%20access%20to%20a%20Noomesh%20add-on.%0A%0AName%3A%0AOrganisation%3A%0AAdd-on%28s%29%20%28Intelligent%20tier%2C%20Evolve%2C%20other%29%3A%0AWhere%20you%27ll%20run%20it%20%28number%20of%20controllers%20/%20nodes%29%3A%0AAnything%20else%20we%20should%20know%3A%0A%0AThanks">Email a request</a>
+        <span class="alt">or write to <a href="mailto:sales@noomesh.ai">sales@noomesh.ai</a></span>
+      </p>
+      <p class="fine">
+        The button opens your mail app with a short form to fill in. The add-on
+        terms are shown, and you accept them, when you install your entitlement.
+      </p>
+    </section>
+
+    <section aria-labelledby="after">
+      <h2 id="after">Once you have an entitlement</h2>
+      <p>You receive a token. Installing it prints the terms and asks you to type <code>accept</code>:</p>
+<pre><code>noo security entitlement install &lt;token&gt;
+noo addons enable trellion-intel
+noo stack restart --force</code></pre>
+      <p class="fine">The add-ons run on your own hardware and send nothing back to us.</p>
+    </section>
+  </main>
+
+  <footer>
+    <div class="wrap">
+      <span class="made">© PersonifAI LLC</span>
+      <span class="made"><a href="/">Home</a></span>
+    </div>
+  </footer>
+
+  <script src="../assets/mesh.js" defer></script>
+</body>
+</html>
