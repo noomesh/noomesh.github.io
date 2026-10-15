@@ -12,3 +12,9 @@ Plain HTML, CSS and JS — no build step. Pushing to `main` publishes, so treat
 ```bash
 python -m http.server 4321      # then open http://localhost:4321/
 ```
+
+## Licence
+
+Apache-2.0 — see `LICENSE`. The page's code and text may be reused. The Noomesh
+name, logo and wordmark are trademarks of PersonifAI LLC and are not covered by
+the licence; see `NOTICE`.
